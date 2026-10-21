@@ -3,53 +3,44 @@ import { ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
 import logo from '../assets/brand/logo-aschke-pflegeschule.png';
 import { Button, Modal } from './ui';
 
-export const STEP_TITLES = [
-  'Willkommen',
-  'Ausbildung',
-  'Start',
-  'Ablauf',
-  'Vergütung',
-  'Verdienst',
-  'Karriere',
-  'Check',
-  'Angebote',
-  'Kontakt',
-  'Datenschutz',
-  'Beratung',
-  'Abschluss',
-] as const;
+/** Gemeinsame Schritte bis zur Entscheidung „Beratungsgespräch ja/nein“. */
+export const BASE_TITLES = ['Willkommen', 'Ausbildung', 'Start', 'Ablauf', 'Vergütung', 'Verdienst', 'Karriere', 'Check', 'Angebote', 'Beratung'] as const;
+
+/** Nur wer ein Beratungsgespräch möchte, durchläuft Kontakt, Datenschutz und Abschluss. Bei „Nein“ werden keine Daten mehr abgefragt. */
+export const stepTitles = (advice: 'appointment' | 'none' | ''): string[] =>
+  advice === 'none' ? [...BASE_TITLES, 'Danke'] : [...BASE_TITLES, 'Kontakt', 'Datenschutz', 'Abschluss'];
 
 export const Logo = ({ height = 48 }: { height?: number }) => (
   <img src={logo} alt="Aschke – mehr als nur eine Schule" style={{ height }} />
 );
 
-export const TopBar = ({ onRestart, showRestart }: { onRestart: () => void; showRestart: boolean }) => (
+export const TopBar = ({ step, titles, onRestart }: { step: number; titles: string[]; onRestart: () => void }) => (
   <div className="topbar">
-    <Logo />
-    <span className="spacer" />
-    {showRestart && (
-      <Button variant="secondary" size="sm" onClick={onRestart}>
-        <RotateCcw size={18} aria-hidden /> Neustart
-      </Button>
+    <Logo height={44} />
+    <span style={{ flex: 1 }} />
+    {step > 0 && (
+      <>
+        <div className="step-label" aria-live="polite">
+          Schritt {step + 1} von {titles.length}
+          <strong>{titles[step]}</strong>
+        </div>
+        <Button variant="secondary" size="sm" onClick={onRestart}>
+          <RotateCcw size={18} aria-hidden /> Neustart
+        </Button>
+      </>
     )}
   </div>
 );
 
-export const ProgressBar = ({ step, onJump }: { step: number; onJump: (i: number) => void }) => (
+export const ProgressBar = ({ step, titles, onJump }: { step: number; titles: string[]; onJump: (i: number) => void }) => (
   <nav className="progress" aria-label="Fortschritt">
     <ol>
-      {STEP_TITLES.map((t, i) => (
+      {titles.map((t, i) => (
         <li key={t} className={i < step ? 'done' : i === step ? 'current' : ''}>
           <button type="button" aria-label={`Schritt ${i + 1}: ${t}`} aria-current={i === step ? 'step' : undefined} disabled={i >= step} onClick={() => onJump(i)} />
         </li>
       ))}
     </ol>
-    <div className="label">
-      <span>
-        Schritt {step + 1} von {STEP_TITLES.length}
-      </span>
-      <strong>{STEP_TITLES[step]}</strong>
-    </div>
   </nav>
 );
 

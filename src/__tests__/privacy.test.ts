@@ -11,6 +11,7 @@ const walk = (dir: string, out: string[] = []): string[] => {
 };
 const ROOT = join(__dirname, '..', '..');
 const stripComments = (t: string) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+const txt_of = (f: string) => readFileSync(f, 'utf8');
 const SRC = walk(join(ROOT, 'src')).map((f) => [f, stripComments(readFileSync(f, 'utf8'))] as const);
 
 describe('Verhinderung unerwünschter Datenpersistenz und -übertragung (statische Prüfung)', () => {
@@ -57,9 +58,7 @@ describe('Verhinderung unerwünschter Datenpersistenz und -übertragung (statisc
     expect(contact.match(/autoComplete="off"/g)?.length).toBeGreaterThanOrEqual(6);
     expect(contact).not.toMatch(/autoComplete="(?!off)/);
   });
-  it('Mailto-Link enthält keine personenbezogenen Daten', () => {
-    const adv = readFileSync(join(ROOT, 'src', 'screens', 'Advice.tsx'), 'utf8');
-    expect(adv).not.toMatch(/session\.contact/);
-    expect(adv).toMatch(/subject=\$\{subject\}/);
+  it('mailto:/tel:-Links enthalten keine personenbezogenen Daten', () => {
+    for (const [file, txt] of SRC.filter(([f]) => f.includes('/screens/') && /mailto:|tel:/.test(txt_of(f)))) expect(txt, file).not.toMatch(/session\.contact/);
   });
 });

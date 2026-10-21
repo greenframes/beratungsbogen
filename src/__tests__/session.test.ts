@@ -15,6 +15,16 @@ describe('Sitzungszustand', () => {
     expect(sessionReducer(s, { type: 'setProgram', program: 'fachkraft' }).start.kind).toBe('confirmed');
     expect(sessionReducer(s, { type: 'setProgram', program: 'assistenz' }).start.kind).toBe('none');
   });
+  it('„Kein Beratungsgespräch“ verwirft bereits eingegebene Kontaktdaten und Einwilligungen', () => {
+    let s = initialSession();
+    s = sessionReducer(s, { type: 'setAdvice', advice: 'appointment' });
+    s = sessionReducer(s, { type: 'patchContact', patch: { firstName: 'Test', email: 'a@b.de' } });
+    s = sessionReducer(s, { type: 'setConsent', id: 'processing', given: true, now });
+    s = sessionReducer(s, { type: 'setAdvice', advice: 'none' });
+    expect(s.advice).toBe('none');
+    expect(s.contact.firstName + s.contact.email).toBe('');
+    expect(s.consents.processing.given).toBe(false);
+  });
   it('Zurücksetzen löscht sämtliche personenbezogenen Daten', () => {
     let s = initialSession();
     s = sessionReducer(s, { type: 'setProgram', program: 'assistenz' });

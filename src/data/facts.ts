@@ -90,3 +90,13 @@ export const eur = (n: number): string =>
   new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: Number.isInteger(n) ? 0 : 2 }).format(n);
 
 export const hours = (n: number): string => new Intl.NumberFormat('de-DE').format(n);
+
+/** „ca.“-Betrag auf Vielfache von `step` gerundet (für Messe-Darstellung, keine festen Summen). */
+export const approxEur = (n: number, step = 50): string => `ca. ${eur(Math.round(n / step) * step)}`;
+
+/** Spanne „ca. von – bis“, untere Grenze abgerundet, obere aufgerundet auf Vielfache von `step`. */
+export const approxRange = (a: number, b: number, step = 100): { lo: number; hi: number; label: string } => {
+  const lo = Math.floor(Math.min(a, b) / step) * step;
+  const hi = Math.ceil(Math.max(a, b) / step) * step;
+  return { lo, hi, label: `ca. ${eur(lo)} – ${eur(hi)}` };
+};

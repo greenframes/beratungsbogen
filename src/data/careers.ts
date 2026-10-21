@@ -18,7 +18,7 @@ export interface CareerStep {
   detailsVerified: boolean;
 }
 
-const NO_DATA = 'Keine verlässliche Angabe verfügbar';
+const NO_DATA = 'Wird im Beratungsgespräch geklärt';
 
 export const CAREER: Record<ProgramId, CareerStep[]> = {
   fachkraft: [
@@ -51,7 +51,7 @@ export const CAREER: Record<ProgramId, CareerStep[]> = {
       title: 'Praxisanleiterin / Praxisanleiter',
       summary: 'Du begleitest Auszubildende in der Praxis und wirst zur Schlüsselperson in der Pflegeausbildung.',
       qualification: 'Abgeschlossene Pflegeausbildung mit Berufserlaubnis',
-      experience: { required: 'ja', detail: 'Mindestens 1 Jahr Berufserfahrung (Aschke-Weiterbildung).' },
+      experience: { required: 'ja', detail: 'Mindestens 1 Jahr Berufserfahrung.' },
       access: 'Weiterbildung 300 UE nach § 4 PflAPrV (Aschke: 6 Module, inkl. 40 Std. Hospitation).',
       path: 'zusaetzliche-schritte',
       pathDetail: 'Zusätzliche Weiterbildung nötig; Zulassung durch den Anbieter.',
@@ -124,7 +124,7 @@ export const CAREER: Record<ProgramId, CareerStep[]> = {
       id: 'fa-fachkraft',
       title: 'Weg zur Pflegefachfrau / zum Pflegefachmann',
       summary: 'Aschke nennt die Ausbildung zur Pflegefachperson und einen verkürzten Weg als mögliche Perspektive.',
-      qualification: 'Abgeschlossene Pflegefachassistenz plus Zugangsvoraussetzungen der Fachkraft-Ausbildung (z. B. Hauptschulabschluss Kl. 9 + Assistenzausbildung laut Aschke).',
+      qualification: 'Pflegefachassistenz-Abschluss plus die Zugangsvoraussetzungen der Fachkraft-Ausbildung',
       experience: { required: 'nein', detail: 'Keine Berufserfahrung genannt.' },
       access: 'Anrechnung gleichwertiger Ausbildung nur auf Antrag; die zuständige Behörde entscheidet über Umfang (§ 12 PflBG). Zusage oder feste Verkürzung gibt es nicht.',
       path: 'zusaetzliche-schritte',

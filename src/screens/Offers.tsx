@@ -1,6 +1,6 @@
 import { ExternalLink as ExtIcon } from 'lucide-react';
 import { FooterNav } from '../components/Layout';
-import { ExternalLink, Notice, ScreenTitle, SourceNote } from '../components/ui';
+import { ExternalLink, ScreenTitle } from '../components/ui';
 import { COURSES, type Course } from '../data/courses';
 import { START_TERMS } from '../data/config';
 import { fact, hours } from '../data/facts';
@@ -8,16 +8,15 @@ import { useSession } from '../state/session';
 import { fmtDate, parseISODate, upcomingTerms } from '../utils/dates';
 import type { Nav } from './types';
 
-const courseDates = (c: Course, today: Date): string[] => {
+const nextDate = (c: Course, today: Date): string | null => {
   if (c.group === 'einstieg') {
     const id = c.id === 'fachkraft' ? 'fachkraft' : 'assistenz';
-    return upcomingTerms(id, today, START_TERMS[id]).map((t) => `Start ${fmtDate(t.date)}`);
+    const t = upcomingTerms(id, today, START_TERMS[id])[0];
+    return t ? `Start ${fmtDate(t.date)}` : null;
   }
   const t0 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  return (c.dates ?? [])
-    .filter((d) => parseISODate(d.to).getTime() >= t0.getTime())
-    .slice(0, 3)
-    .map((d) => (d.from === d.to ? fmtDate(d.from) : `${fmtDate(d.from)} – ${fmtDate(d.to)}`));
+  const d = (c.dates ?? []).find((x) => parseISODate(x.to).getTime() >= t0.getTime());
+  return d ? `Nächster Termin ${fmtDate(d.from)}` : null;
 };
 
 const durationOf = (c: Course): string | null => {
@@ -28,29 +27,22 @@ const durationOf = (c: Course): string | null => {
   return `${hours(Number(f.value))} ${f.unit ?? ''}`.trim();
 };
 
-const CourseCard = ({ c, today, mine }: { c: Course; today: Date; mine: boolean }) => {
-  const dates = courseDates(c, today);
+const TARGET: Record<string, string> = { fachkraft: 'Berufseinsteiger', assistenz: 'Berufseinsteiger', praxisanleitung: 'Pflegefachkräfte', refresher: 'Praxisanleitende', palliative: 'Pflegefachkräfte' };
+
+const Offer = ({ c, today, mine }: { c: Course; today: Date; mine: boolean }) => {
   const dur = durationOf(c);
+  const date = nextDate(c, today);
   return (
-    <article className="card stack" style={mine ? { borderColor: 'var(--c-pink-600)', borderWidth: 2 } : undefined}>
+    <article className="card offer" style={mine ? { borderColor: 'var(--c-pink-600)', borderWidth: 2 } : undefined}>
       <div className="chips">
         {mine && <span className="chip">Deine Wahl</span>}
-        <span className={`chip ${c.group === 'einstieg' ? 'ok' : 'blue'}`}>{c.group === 'einstieg' ? 'Berufseinstieg' : 'Weiterbildung'}</span>
-        {dur && <span className="chip">Dauer: {dur}</span>}
+        {dur && <span className="chip blue">{dur}</span>}
+        <span className="chip warn">{date ?? 'Termin auf Anfrage'}</span>
       </div>
-      <h3 style={{ marginBottom: 0 }}>{c.title}</h3>
-      <p style={{ marginBottom: 0 }}>{c.summary}</p>
-      <p className="small" style={{ marginBottom: 0 }}><strong>Zielgruppe:</strong> {c.audience}</p>
-      <div className="small"><strong>Zugang:</strong><ul style={{ margin: '4px 0 0', paddingLeft: '1.2em' }}>{c.requirements.map((r) => <li key={r}>{r}</li>)}</ul></div>
-      <div className="small">
-        <strong>Aktuelle Termine laut Website:</strong>{' '}
-        {dates.length ? dates.join(' · ') : c.datesNote ?? 'Aktuell kein Termin veröffentlicht.'}
-      </div>
-      <div className="row">
-        <ExternalLink href={c.url} className="btn btn-secondary btn-sm">Zur offiziellen Kursseite <ExtIcon size={16} aria-hidden /></ExternalLink>
-        <span className="small muted">Benötigt Internet</span>
-      </div>
-      <SourceNote ids={[c.sourceId]} asOf="2026-10-21" status="dynamic" />
+      <h4>{c.title}</h4>
+      <p className="sum">{c.summary}</p>
+      <p style={{ WebkitLineClamp: 1 }}><strong>Zielgruppe:</strong> {TARGET[c.id] ?? 'Pflegefachkräfte'}</p>
+      <ExternalLink href={c.url} className="btn btn-secondary btn-sm" >Mehr erfahren <ExtIcon size={16} aria-hidden /></ExternalLink>
     </article>
   );
 };
@@ -62,20 +54,16 @@ export const Offers = ({ nav }: { nav: Nav }) => {
   const wb = COURSES.filter((c) => c.group === 'weiterbildung');
   return (
     <section className="screen">
-      <ScreenTitle eyebrow="Angebote" title="Was bietet Aschke dir?" lead="Nur Angebote, die auf der offiziellen Aschke-Website veröffentlicht sind. Termine ändern sich – verbindlich ist immer die Kursseite." />
-      <div className="stack-lg">
-        <div className="stack">
-          <h3>Für den Berufseinstieg</h3>
-          <div className="grid two">{einstieg.map((c) => <CourseCard key={c.id} c={c} today={today} mine={c.id === session.program} />)}</div>
-        </div>
-        <div className="stack">
-          <h3>Weiterbildungen für später</h3>
-          <Notice><p>Diese Weiterbildungen sind <strong>erst nach einer abgeschlossenen Pflegeausbildung</strong> (und teils mit Berufserfahrung) zugänglich. Sie zeigen dir, wie es nach der Ausbildung weitergehen kann.{session.program === 'assistenz' ? ' Sie richten sich an Pflegefachkräfte und nicht direkt an Pflegefachassistenzen.' : ''}</p></Notice>
-          <div className="grid two">{wb.map((c) => <CourseCard key={c.id} c={c} today={today} mine={false} />)}</div>
-        </div>
-        <SourceNote ids={['aschke-weiterbildung']} asOf="2026-10-21" status="dynamic" label="Übersicht" />
+      <ScreenTitle title="Was bietet Aschke dir?" />
+      <div className="stack">
+        <h3 style={{ margin: 0 }}>Für den Berufseinstieg</h3>
+        <div className="offers-grid">{einstieg.map((c) => <Offer key={c.id} c={c} today={today} mine={c.id === session.program} />)}</div>
       </div>
-      <FooterNav onBack={nav.back} onNext={nav.next} nextLabel="Weiter zu meinen Daten" />
+      <div className="stack">
+        <h3 style={{ margin: 0 }}>Weiterbildungen für später <span className="small muted" style={{ fontWeight: 500 }}>– erst nach abgeschlossener Pflegeausbildung</span></h3>
+        <div className="offers-grid">{wb.map((c) => <Offer key={c.id} c={c} today={today} mine={false} />)}</div>
+      </div>
+      <FooterNav onBack={nav.back} onNext={nav.next} nextLabel="Weiter" />
     </section>
   );
 };

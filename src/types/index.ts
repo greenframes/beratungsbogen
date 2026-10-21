@@ -89,12 +89,11 @@ export interface ConsentRecord {
   timestamp: string | null;
 }
 
-export type AdviceWish = 'appointment' | 'info' | 'none' | '';
+export type AdviceWish = 'appointment' | 'none' | '';
 
 export interface Session {
   program: ProgramId | null;
   start: StartChoice;
-  assisted: boolean;
   contact: ContactData;
   consents: Record<ConsentPurposeId, ConsentRecord>;
   furtherContactChannels: ContactChannel[];

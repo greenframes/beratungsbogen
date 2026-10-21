@@ -1,8 +1,5 @@
 import { useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { AlertTriangle, Check, ChevronDown, Info, X } from 'lucide-react';
-import type { Fact, Source } from '../types';
-import { sourceById } from '../data/sources';
-import { fmtDate } from '../utils/dates';
 
 type BtnProps = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'ghost' | 'danger'; size?: 'sm' | 'md' | 'lg' };
 export const Button = ({ variant = 'primary', size = 'md', className = '', ...p }: BtnProps) => (
@@ -66,54 +63,8 @@ export const Modal = ({ title, children, actions, onClose, wide = false }: { tit
   );
 };
 
-const STATUS_LABEL: Record<Fact['status'], string> = {
-  verified: 'Belegt',
-  dynamic: 'Datenstand beachten',
-  unconfirmed: 'Nicht bestätigt',
-  illustrative: 'Veranschaulichung',
-};
-
-export const SourceList = ({ ids }: { ids: string[] }) => {
-  const sources: Source[] = ids.map(sourceById);
-  return (
-    <ul className="small" style={{ paddingLeft: '1.2em', margin: 0 }}>
-      {sources.map((s) => (
-        <li key={s.id} style={{ marginBottom: 8 }}>
-          <strong>{s.title}</strong> – {s.publisher}
-          <br />
-          <ExternalLink href={s.url}>{s.url}</ExternalLink> <span className="muted">(abgerufen {fmtDate(s.retrieved)})</span>
-          {s.note && (
-            <>
-              <br />
-              <em className="muted">{s.note}</em>
-            </>
-          )}
-        </li>
-      ))}
-    </ul>
-  );
-};
-
-/** Kompakter Quellen-/Datenstand-Hinweis mit aufklappbarer Quellenliste. */
-export const SourceNote = ({ ids, asOf, status = 'verified', label = 'Quellen' }: { ids: string[]; asOf?: string; status?: Fact['status']; label?: string }) => {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="stack" style={{ marginTop: 12 }}>
-      <div className="row small muted">
-        <span className={`chip ${status === 'verified' ? 'ok' : status === 'dynamic' ? 'warn' : ''}`}>{STATUS_LABEL[status]}</span>
-        {asOf && <span>Stand: {/^\d{4}-\d{2}-\d{2}$/.test(asOf) ? fmtDate(asOf) : asOf}</span>}
-        <button type="button" className="btn btn-ghost btn-sm" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
-          {label} {open ? 'ausblenden' : 'anzeigen'}
-        </button>
-      </div>
-      {open && <SourceList ids={ids} />}
-    </div>
-  );
-};
-
-export const ScreenTitle = ({ eyebrow, title, lead }: { eyebrow?: string; title: string; lead?: ReactNode }) => (
-  <header style={{ marginBottom: 'var(--sp-6)' }}>
-    {eyebrow && <div className="eyebrow">{eyebrow}</div>}
+export const ScreenTitle = ({ title, lead }: { eyebrow?: string; title: string; lead?: ReactNode }) => (
+  <header className="page-head">
     <h2 tabIndex={-1} data-screen-title>
       {title}
     </h2>

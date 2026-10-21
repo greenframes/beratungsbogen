@@ -26,7 +26,7 @@ const readBlob = (b: Blob) => new Promise<string>((res) => { const r = new FileR
 describe('PDF-Interessentenbogen', () => {
   it('enthält alle geforderten Inhalte', () => {
     const t = text(sample());
-    for (const expected of ['Interessentenbogen', 'Ausbildungsberatung', 'Erstellt am 21.10.2026, 14:05 Uhr', 'Erika Mustermann-Test', 'erika@example.org', '0171 1234567', '04.03.2001', 'Mittlerer Schulabschluss', 'Pflegefachassistenz', '01.04.2027', '30.09.2028', 'Wünscht einen Beratungstermin', 'Zur Kenntnis genommen', 'Einwilligung erteilt', 'Quellen der Ausbildungsinformationen', 'aschke-seminare.de/pflegefachassistenz-ausbildung-hagen', 'Seite 1 von ', 'Vertraulich', 'Hagen', 'voraussichtlich'])
+    for (const expected of ['Interessentenbogen', 'Ausbildungsberatung', 'Erstellt am 21.10.2026, 14:05 Uhr', 'Erika Mustermann-Test', 'erika@example.org', '0171 1234567', '04.03.2001', 'Mittlerer Schulabschluss', 'Pflegefachassistenz', '01.04.2027', '30.09.2028', 'Wünscht ein Beratungsgespräch', 'Zur Kenntnis genommen', 'Einwilligung erteilt', 'Seite 1 von ', 'Vertraulich', 'Hagen', 'voraussichtlich'])
       expect(t, expected).toContain(expected);
   });
   it('kennzeichnet nicht erteilte Einwilligungen und das Ende als voraussichtlich; keine Platzgarantie', () => {
@@ -38,8 +38,8 @@ describe('PDF-Interessentenbogen', () => {
   });
   it('kennzeichnet hypothetische Startwünsche und leitet keinen bestätigten Kursstart ab', () => {
     const t = text(sample({ start: { kind: 'hypothetical', date: '2027-09-01' } }));
-    expect(t).toContain('hypothetisch');
-    expect(t).toContain('KEIN bestätigter Kursstart');
+    expect(t).toContain('unverbindlich');
+    expect(t).toContain('kein bestätigter Kursstart');
   });
   it('zeigt bei Minderjährigen einen Bearbeitungshinweis und keine zusätzliche Einwilligung', () => {
     const s = sample();
@@ -48,11 +48,13 @@ describe('PDF-Interessentenbogen', () => {
     expect(t).toContain('Hinweis für die Bearbeitung');
     expect(t).toContain('Sorgeberechtigten');
   });
-  it('weist die Abweichung zwischen berechnetem und veröffentlichtem Ende der Pflegefachkraft aus', () => {
-    const t = text(sample({ program: 'fachkraft' }));
-    expect(t).toContain('31.03.2030');
-    expect(t).toContain('30.09.2030');
-    expect(t).toContain('Abweichung');
+  it('nennt für einen bestätigten Termin das von Aschke veröffentlichte Ende, sonst das berechnete', () => {
+    expect(text(sample({ program: 'fachkraft' }))).toContain('Voraussichtliches Ende: 30.09.2030');
+    expect(text(sample({ start: { kind: 'hypothetical', date: '2027-07-01' } }))).toContain('Voraussichtliches Ende: 31.12.2028');
+  });
+  it('enthält keine Quellen- oder Website-Hinweise', () => {
+    const t = text(sample());
+    expect(t).not.toMatch(/Quellen|abgerufen|Website|gesetze-im-internet/);
   });
   it('Dateiname ist neutral und enthält keine personenbezogenen Daten', () => {
     expect(pdfFilename(now)).toBe('Interessentenbogen_2026-10-21.pdf');

@@ -21,7 +21,6 @@ export const emptyContact = (): ContactData => ({
 export const initialSession = (): Session => ({
   program: null,
   start: { kind: 'none' },
-  assisted: false,
   contact: emptyContact(),
   consents: initialConsents(),
   furtherContactChannels: [],
@@ -31,7 +30,6 @@ export const initialSession = (): Session => ({
 export type Action =
   | { type: 'setProgram'; program: ProgramId }
   | { type: 'setStart'; start: StartChoice }
-  | { type: 'setAssisted'; assisted: boolean }
   | { type: 'patchContact'; patch: Partial<ContactData> }
   | { type: 'setConsent'; id: ConsentPurposeId; given: boolean; now: Date }
   | { type: 'setChannels'; channels: ContactChannel[] }
@@ -45,8 +43,6 @@ export const sessionReducer = (state: Session, action: Action): Session => {
       return state.program === action.program ? state : { ...state, program: action.program, start: { kind: 'none' } };
     case 'setStart':
       return { ...state, start: action.start };
-    case 'setAssisted':
-      return { ...state, assisted: action.assisted };
     case 'patchContact':
       return { ...state, contact: { ...state.contact, ...action.patch } };
     case 'setConsent': {
@@ -61,7 +57,10 @@ export const sessionReducer = (state: Session, action: Action): Session => {
     case 'setChannels':
       return { ...state, furtherContactChannels: action.channels };
     case 'setAdvice':
-      return { ...state, advice: action.advice };
+      // „Nein“ = keine Daten mehr: bereits eingegebene Kontaktdaten und Einwilligungen werden sofort verworfen
+      return action.advice === 'none'
+        ? { ...state, advice: 'none', contact: emptyContact(), consents: initialConsents(), furtherContactChannels: [] }
+        : { ...state, advice: action.advice };
     case 'reset':
       return initialSession();
   }

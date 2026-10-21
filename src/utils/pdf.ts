@@ -1,7 +1,6 @@
 import { jsPDF } from 'jspdf';
 import type { Session } from '../types';
 import { ORG, POLICY } from '../data/config';
-import { sourceById } from '../data/sources';
 import { CONSENT_PURPOSES, isMinor, minorNotice } from './consent';
 import { fmtDate, fmtDateTime, fmtMonthYear } from './dates';
 import { adviceLabel, periodLines } from './summary';
@@ -9,7 +8,6 @@ import { pdfFilename } from './filename';
 
 export { pdfFilename };
 import { SCHOOL_LEAVING_LABELS } from './eligibility';
-import { fact } from '../data/facts';
 
 const PROGRAM_NAMES = {
   fachkraft: 'Pflegefachfrau / Pflegefachmann (3 Jahre)',
@@ -138,7 +136,7 @@ export const buildInterestSheet = ({ session: s, now }: PdfInput, opts: PdfOptio
   heading('Gewünschte Ausbildung');
   row('Ausbildung', s.program ? PROGRAM_NAMES[s.program] : '');
   periodLines(s).forEach((l, i) => row(i === 0 ? 'Ausbildungsstart / -zeitraum' : '', l));
-  para('Das Ende ist voraussichtlich. Prüfungszeiträume, Unterbrechungen und individuelle Bedingungen können den tatsächlichen Verlauf beeinflussen. Ein Platz ist durch diese Angabe nicht reserviert.');
+  para('Das Ende ist voraussichtlich. Ein Platz ist durch diese Angabe nicht reserviert.');
 
   heading('Beratungswunsch');
   row('Beratungstermin', adviceLabel(s.advice));
@@ -156,17 +154,6 @@ export const buildInterestSheet = ({ session: s, now }: PdfInput, opts: PdfOptio
     y += 6;
   });
   para(`Datenschutzinformation: ${POLICY.privacyInfoVersion}. Verantwortlicher: ${ORG.name}, ${ORG.controller.street}, ${ORG.controller.city}. Datenschutz: ${ORG.dataProtectionEmail}. Offizielle Datenschutzerklärung: ${ORG.privacyUrl}`);
-
-  heading('Quellen der Ausbildungsinformationen');
-  const used = s.program === 'fachkraft' ? ['aschke-fachkraft', 'pflbg', 'pflaprv'] : s.program === 'assistenz' ? ['aschke-assistenz', 'pflfassg', 'pflfassaprv'] : [];
-  used.forEach((id) => {
-    const src = sourceById(id);
-    para(`${src.title} – ${src.publisher}. ${src.url} (abgerufen ${fmtDate(src.retrieved)})`, 8);
-  });
-  if (s.program) {
-    const dur = s.program === 'fachkraft' ? fact('fk.duration.months') : fact('fa.duration.months');
-    para(`Regeldauer in Vollzeit: ${dur.value} Monate (${dur.sources.map((i) => sourceById(i).publisher).join('; ')}).`, 8);
-  }
 
   heading('Aufbewahrung');
   para('Dieser Bogen enthält personenbezogene Daten. Bitte nach dem Speichern nur in einem von Aschke freigegebenen, geschützten Speicherort ablegen und aus dem Download-/Dateiordner des iPads löschen. Die App selbst speichert keine Daten.', 9, DARK);

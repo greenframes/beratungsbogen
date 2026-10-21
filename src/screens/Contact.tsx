@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent, type ReactNode } from 'react';
+import { useState, type ChangeEvent, type ReactNode } from 'react';
 import { AlertCircle, Pencil } from 'lucide-react';
 import { FooterNav } from '../components/Layout';
 import { Button, Notice, ScreenTitle } from '../components/ui';
@@ -31,6 +31,8 @@ const Field = ({ id, label, hint, error, children }: { id: string; label: string
   </div>
 );
 
+const FIELD_IDS: Record<keyof ContactData, string> = { firstName: 'fn', lastName: 'ln', email: 'em', mobile: 'mo', birthDate: 'bd', schoolLeaving: 'sl', currentSchoolType: 'cs', currentSchoolName: 'sn', expectedLeavingMonth: 'el' };
+
 const PROGRAM_LABEL = { fachkraft: 'Pflegefachfrau / Pflegefachmann (3 Jahre)', assistenz: 'Pflegefachassistenz (1½ Jahre)' } as const;
 
 export const Contact = ({ nav }: { nav: Nav }) => {
@@ -38,7 +40,6 @@ export const Contact = ({ nav }: { nav: Nav }) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [touched, setTouched] = useState<Partial<Record<keyof ContactData, boolean>>>({});
-  const formRef = useRef<HTMLDivElement>(null);
   const c = session.contact;
   const now = new Date();
 
@@ -80,7 +81,10 @@ export const Contact = ({ nav }: { nav: Nav }) => {
     setErrors(e);
     setTouched(Object.fromEntries(Object.keys(c).map((k) => [k, true])) as Partial<Record<keyof ContactData, boolean>>);
     if (Object.keys(e).length === 0) setStep((s) => (s === 1 ? 2 : 3));
-    else setTimeout(() => formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus(), 50);
+    else {
+      const first = (Object.keys(e) as (keyof ContactData)[])[0];
+      if (first) document.getElementById(FIELD_IDS[first])?.focus();
+    }
   };
 
   const goBack = () => {
@@ -91,23 +95,23 @@ export const Contact = ({ nav }: { nav: Nav }) => {
 
   return (
     <section className="screen" onFocusCapture={onFocusCapture}>
-      <ScreenTitle eyebrow="Kontakt" title="Deine Kontaktdaten" lead="Damit wir dich zu deiner Ausbildung beraten können. Wir fragen nur, was dafür nötig ist." />
-      <div className="steps-mini" aria-label={`Formularschritt ${step} von 3`}>
+      <ScreenTitle title="Deine Kontaktdaten" lead="Damit wir dich beraten können – mehr fragen wir nicht." />
+      <div className="steps-mini" style={{ margin: 0 }} aria-label={`Formularschritt ${step} von 3`}>
         {[1, 2, 3].map((n) => <span key={n} className={`dot ${n === step ? 'on' : ''}`}>{n}</span>)}
         <span>{step === 1 ? 'Kontakt' : step === 2 ? 'Schule' : 'Auswahl prüfen'}</span>
       </div>
-      <div ref={formRef} className="card" style={{ paddingBottom: 'var(--sp-7)' }}>
+      <div className="card">
         {step === 1 && (
           <div className="form-grid" role="group" aria-label="Kontakt">
             <Field id="fn" label="Vorname" error={errors.firstName}><input className="input" autoComplete="off" autoCapitalize="words" enterKeyHint="next" {...props('firstName', 'fn')} /></Field>
             <Field id="ln" label="Nachname" error={errors.lastName}><input className="input" autoComplete="off" autoCapitalize="words" enterKeyHint="next" {...props('lastName', 'ln')} /></Field>
-            <Field id="em" label="E-Mail-Adresse" hint="Beispiel: name@beispiel.de" error={errors.email}><input className="input" type="email" inputMode="email" autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} {...props('email', 'em')} /></Field>
-            <Field id="mo" label="Handynummer" hint="Beispiel: 0171 1234567" error={errors.mobile}><input className="input" type="tel" inputMode="tel" autoComplete="off" {...props('mobile', 'mo')} /></Field>
+            <Field id="em" label="E-Mail-Adresse" hint="Beispiel: name@beispiel.de" error={errors.email}><input className="input" placeholder="name@beispiel.de" type="email" inputMode="email" autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} {...props('email', 'em')} /></Field>
+            <Field id="mo" label="Handynummer" hint="Beispiel: 0171 1234567" error={errors.mobile}><input className="input" placeholder="0171 1234567" type="tel" inputMode="tel" autoComplete="off" {...props('mobile', 'mo')} /></Field>
           </div>
         )}
         {step === 2 && (
           <div className="form-grid" role="group" aria-label="Schule">
-            <Field id="bd" label="Geburtsdatum" hint="Wir fragen es, um das richtige Beratungsverfahren zu wählen (z. B. bei Minderjährigen)." error={errors.birthDate}>
+            <Field id="bd" label="Geburtsdatum" error={errors.birthDate}>
               <input className="input" type="date" max={new Date().toISOString().slice(0, 10)} autoComplete="off" {...props('birthDate', 'bd')} />
             </Field>
             <Field id="sl" label="Schulabschluss" error={errors.schoolLeaving}>
@@ -128,7 +132,7 @@ export const Contact = ({ nav }: { nav: Nav }) => {
               </Field>
             )}
             <div className="full">
-              <Field id="sn" label="Name der Schule (freiwillig)" hint="Kannst du leer lassen." error={errors.currentSchoolName}>
+              <Field id="sn" label="Name der Schule (freiwillig)" error={errors.currentSchoolName}>
                 <input className="input" autoComplete="off" maxLength={100} {...props('currentSchoolName', 'sn')} />
               </Field>
             </div>
@@ -148,7 +152,7 @@ export const Contact = ({ nav }: { nav: Nav }) => {
             </dl>
             {(errors.program || errors.start) && <Notice kind="danger"><p>{errors.program ?? errors.start}</p></Notice>}
             {Object.keys(errors).filter((k) => k !== 'program' && k !== 'start').length > 0 && <Notice kind="danger"><p>Bitte gehe zurück und korrigiere die markierten Angaben.</p></Notice>}
-            <Notice><p>Ein ausgewählter Starttermin ist ein Wunsch. Er ist nicht reserviert und nicht garantiert.</p></Notice>
+            
           </div>
         )}
       </div>

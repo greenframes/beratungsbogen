@@ -16,7 +16,7 @@ Voraussetzung: Node.js ≥ 20 (getestet mit 22).
 ```bash
 npm install          # Abhängigkeiten installieren
 npm run dev          # Entwicklungsserver (http://localhost:5173, auch im WLAN für das iPad erreichbar)
-npm test             # 79 Unit-/Integrationstests (Vitest)
+npm test             # 82 Unit-/Integrationstests (Vitest)
 npm run build        # Typprüfung + Produktions-Build nach dist/ (inkl. Offline-Cache-Liste)
 npm run preview      # fertigen Build lokal ansehen (http://localhost:4173)
 npm run test:e2e     # Browser-Prüfung (Chromium, iPad-Formate, Offline, PDF-Download); benötigt vorherigen Build
@@ -29,21 +29,22 @@ Home-Bildschirm*. Danach läuft die App im Vollbild und – nach dem ersten Lade
 
 ## Ablauf der App
 
+Messetauglich: **jede Seite ist ohne Scrollen sichtbar** (iPad hoch und quer), kurze Texte, keine Quellen-/Website-Hinweise.
+Beträge werden nur als **„ca.“-Werte** gezeigt (Ausbildungsvergütung auf 50 € gerundet, Verdienst als gerundete Spanne).
+
 | # | Bildschirm | Inhalt |
 |---|-----------|--------|
-| 1 | Willkommen | Botschaft, „Meinen Weg entdecken“, zweiter Einstieg „mit Begleitung“; keine Dateneingabe |
-| 2 | Ausbildung | Zwei Auswahlkarten; Wahl bleibt bis zum PDF erhalten |
-| 3 | Start | Veröffentlichte Termine (nur Zukunft), „Noch offen“, unverbindlicher Wunschmonat; berechnet Zeitraum |
-| 4 | Ablauf | Zeitachse, Stundenumfang, Phasenkarten (gesetzlicher Rahmen, klar als vereinfachtes Beispiel markiert) |
-| 5 | Vergütung | Fachkraft: tarifliches Beispiel brutto je Ausbildungsjahr; Assistenz: „Keine verlässliche Angabe“ |
-| 6 | Verdienst | Mediane brutto (IAB/BA-Statistik) als Spanne, mit Einordnung |
-| 7 | Karriere | Interaktive Leiter je Ausbildung mit Qualifikation, Erfahrung, Zugang, Weg |
-| 8 | Check | Orientierung zu Schulabschluss – keine Zulassungsentscheidung |
-| 9 | Angebote | Nur veröffentlichte Aschke-Kurse; Einsteiger und Weiterbildungen getrennt |
-| 10 | Kontakt | Dreistufiges Formular mit Validierung am Feld |
-| 11 | Datenschutz | Kurzinfo, Kenntnisnahme ≠ Einwilligung, optionale Einwilligung, Minderjährigenhinweis |
-| 12 | Beratung | Optional; keine erfundene Buchung – Telefon/E-Mail der Pflegeschule |
-| – | Abschluss | Zusammenfassung, lokale PDF-Erzeugung, Teilen/Download, „Sitzung beenden & Daten löschen“ |
+| 1 | Willkommen | Botschaft und ein Button „Meinen Weg entdecken“; keine Dateneingabe |
+| 2 | Ausbildung | Zwei Auswahlkarten |
+| 3 | Start | Termin (nur Zukunft), „Noch offen“, unverbindlicher Wunschmonat; Zeitraum wird berechnet |
+| 4 | Ablauf | Zeitachse, Stundenumfang, Einsatzbereiche als Icons |
+| 5 | Vergütung | Fachkraft: ca.-Beträge je Ausbildungsjahr; Assistenz: Hinweis auf persönliche Beratung |
+| 6 | Verdienst | Gerundete ca.-Spanne brutto pro Monat |
+| 7 | Karriere | Interaktive Leiter |
+| 8 | Check | Orientierung zum Schulabschluss |
+| 9 | Angebote | Aschke-Kurse, Einsteiger und Weiterbildungen getrennt |
+| 10 | Beratung | **Nur Ja/Nein.** Bei „Nein“ endet die App mit einer Dankesseite – es werden keine Daten abgefragt |
+| 11–13 | Kontakt → Datenschutz → Abschluss | Nur bei „Ja“: Formular, Einwilligungen, PDF-Erzeugung, „Sitzung beenden“ |
 
 ## Projektstruktur
 

@@ -31,6 +31,8 @@ const VIEWPORTS = [
   { name: 'ipad-quer-1180x820', width: 1180, height: 820 },
   { name: 'ipad-mini-hochkant-744x1133', width: 744, height: 1133 },
   { name: 'ipad-pro-quer-1366x1024', width: 1366, height: 1024 },
+  { name: 'ipad-10-quer-1080x810', width: 1080, height: 810 },
+  { name: 'ipad-hochkant-768x1024', width: 768, height: 1024 },
 ];
 
 const results = [];
@@ -53,6 +55,10 @@ try {
       n += 1;
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       ok(`[${vp.name}] ${label}: kein horizontaler Überlauf`, overflow <= 0, `Überlauf=${overflow}px`);
+      // Messetauglich: der gesamte Inhalt jeder Seite ist ohne Scrollen sichtbar
+      await page.waitForTimeout(350);
+      const scroll = await page.evaluate(() => { const m = document.querySelector('main'); return m ? m.scrollHeight - m.clientHeight : 0; });
+      ok(`[${vp.name}] ${label}: ohne Scrollen sichtbar`, scroll <= 1, `Überstand=${scroll}px`);
       await page.screenshot({ path: join(OUT, `${vp.name}_${String(n).padStart(2, '0')}_${label}.png`), fullPage: false });
     };
     const click = (name) => page.getByRole('button', { name }).first().click();
@@ -68,7 +74,6 @@ try {
     await shot('start');
     await next();
     await shot('ablauf');
-    await page.getByRole('tab', { name: /Stationäre Akutpflege/ }).click();
     await next();
     await shot('verguetung');
     await next();
@@ -81,7 +86,10 @@ try {
     await shot('check');
     await next();
     await shot('angebote');
-    await click(/Weiter zu meinen Daten/);
+    await next();
+    await radio(/Ja, ich möchte ein Beratungsgespräch/);
+    await shot('beratung');
+    await next();
     await page.fill('#fn', 'Erika');
     await page.fill('#ln', 'Testfrau');
     await page.fill('#em', 'erika@example.org');
@@ -99,24 +107,31 @@ try {
     await page.getByLabel(/Einwilligung: Interessentenbogen/).check();
     await shot('datenschutz');
     await next();
-    await radio(/Beratungstermin vereinbaren/);
-    await shot('beratung');
-    await next();
     await page.getByRole('button', { name: /PDF speichern/ }).waitFor({ timeout: 10000 });
     await shot('abschluss');
-    if (vp.name.startsWith('ipad-hochkant')) {
+    if (vp.name.startsWith('ipad-hochkant-820')) {
       const [dl] = await Promise.all([page.waitForEvent('download', { timeout: 10000 }), page.getByRole('button', { name: /PDF speichern/ }).click()]);
       const file = join(OUT, dl.suggestedFilename());
       await dl.saveAs(file);
       ok('PDF-Download startet mit neutralem Dateinamen', /^Interessentenbogen_\d{4}-\d{2}-\d{2}\.pdf$/.test(dl.suggestedFilename()), dl.suggestedFilename());
       await page.getByText(/Der Download wurde gestartet/).waitFor();
-      ok('Meldung behauptet kein „gespeichert“', !(await page.locator('.notice.ok').innerText()).match(/gespeichert\b(?! wurde)/i) || true);
-      // Speicher prüfen
       const storage = await page.evaluate(async () => ({ ls: localStorage.length, ss: sessionStorage.length, idb: (await indexedDB.databases?.())?.length ?? 0, cookie: document.cookie, url: location.href }));
       ok('kein localStorage/sessionStorage/IndexedDB/Cookie nach der Sitzung', storage.ls === 0 && storage.ss === 0 && storage.idb === 0 && storage.cookie === '', JSON.stringify(storage));
       ok('URL enthält keine Parameter', !/[?#]/.test(storage.url), storage.url);
     }
     await click(/Sitzung beenden/);
+    ok(`[${vp.name}] Sitzung beenden führt zur Startseite`, await page.getByRole('heading', { name: /Deine Zukunft/ }).isVisible());
+    // Pfad „kein Beratungsgespräch“: keine Datenabfrage
+    await click(/Meinen Weg entdecken/);
+    await radio(/Pflegefachassistenz/);
+    await next();
+    await radio(/Noch offen/);
+    for (let i = 0; i < 7; i++) await next();
+    await radio(/Nein, danke/);
+    await click(/Fertig/);
+    await shot('danke');
+    ok(`[${vp.name}] Nein-Pfad: keine Eingabefelder`, (await page.locator('input, select, textarea').count()) === 0);
+    await click(/Neu starten/);
     ok(`[${vp.name}] Neustart führt zur Startseite`, await page.getByRole('heading', { name: /Deine Zukunft/ }).isVisible());
     ok(`[${vp.name}] keine Konsolenfehler`, errors.length === 0, errors.join(' | ').slice(0, 300));
     ok(`[${vp.name}] keine Anfragen an externe Server`, external.length === 0, external.join(', '));

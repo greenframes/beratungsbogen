@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { IdleGuard } from './components/Idle';
-import { ProgressBar, RestartDialog, STEP_TITLES, TopBar } from './components/Layout';
+import { ProgressBar, RestartDialog, stepTitles, TopBar } from './components/Layout';
 import { useSession } from './state/session';
 import { Advice } from './screens/Advice';
 import { Career } from './screens/Career';
@@ -8,6 +8,7 @@ import { Check } from './screens/Check';
 import { ChooseProgram } from './screens/ChooseProgram';
 import { Contact } from './screens/Contact';
 import { Finish } from './screens/Finish';
+import { Goodbye } from './screens/Goodbye';
 import { Income } from './screens/Income';
 import { Offers } from './screens/Offers';
 import { Pay } from './screens/Pay';
@@ -16,8 +17,6 @@ import { Process } from './screens/Process';
 import { StartDate } from './screens/StartDate';
 import { Welcome } from './screens/Welcome';
 import type { Nav } from './screens/types';
-
-const LAST = STEP_TITLES.length - 1;
 
 export const App = () => {
   const { session, dispatch } = useSession();
@@ -33,7 +32,8 @@ export const App = () => {
     setAskRestart(false);
   }, [dispatch]);
 
-  const goTo = useCallback((i: number) => setStep(Math.max(0, Math.min(LAST, i))), []);
+  const titles = stepTitles(session.advice);
+  const goTo = useCallback((i: number) => setStep(Math.max(0, Math.min(titles.length - 1, i))), [titles.length]);
   const nav: Nav = {
     next: () => goTo(step + 1),
     back: () => goTo(step - 1),
@@ -47,13 +47,14 @@ export const App = () => {
     mainRef.current?.querySelector<HTMLElement>('[data-screen-title]')?.focus({ preventScroll: true });
   }, [step]);
 
-  const screens = [Welcome, ChooseProgram, StartDate, Process, Pay, Income, Career, Check, Offers, Contact, Privacy, Advice, Finish];
+  const base = [Welcome, ChooseProgram, StartDate, Process, Pay, Income, Career, Check, Offers, Advice];
+  const screens = session.advice === 'none' ? [...base, Goodbye] : [...base, Contact, Privacy, Finish];
   const Screen = screens[step] ?? Welcome;
 
   return (
     <div className="app">
-      <TopBar onRestart={() => (hasData ? setAskRestart(true) : doRestart())} showRestart={step > 0} />
-      {step > 0 && <ProgressBar step={step} onJump={goTo} />}
+      <TopBar step={step} titles={titles} onRestart={() => (hasData ? setAskRestart(true) : doRestart())} />
+      {step > 0 && <ProgressBar step={step} titles={titles} onJump={goTo} />}
       <main className="main" ref={mainRef}>
         <Screen nav={nav} />
       </main>

@@ -72,7 +72,7 @@ describe('Faktenbasis', () => {
   it('Karrierestufen und Kurse verweisen auf existierende Quellen; unbelegte Details sind gekennzeichnet', () => {
     for (const step of Object.values(CAREER).flat()) {
       step.sourceIds.forEach((s) => expect(() => sourceById(s)).not.toThrow());
-      if (!step.detailsVerified) expect(step.access + step.qualification).toMatch(/Keine verlässliche Angabe verfügbar/);
+      if (!step.detailsVerified) expect(step.access + step.qualification).toMatch(/Beratungsgespräch/);
     }
     COURSES.forEach((c) => expect(() => sourceById(c.sourceId)).not.toThrow());
     // Weiterbildungen sind klar von Berufseinsteiger-Angeboten getrennt

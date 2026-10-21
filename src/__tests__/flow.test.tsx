@@ -17,12 +17,12 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers());
 
 describe('Geführter Ablauf', () => {
-  it('Willkommen: keine Eingabefelder, Hinweis auf lokale Verarbeitung, zweiter Einstieg mit Begleitung', () => {
+  it('Willkommen: keine Eingabefelder und nur ein Einstieg', () => {
     renderApp();
     expect(screen.getByRole('heading', { name: /Deine Zukunft in der Pflege beginnt hier/ })).toBeInTheDocument();
     expect(screen.queryAllByRole('textbox')).toHaveLength(0);
-    expect(screen.getByRole('button', { name: /Mit Begleitung/ })).toBeInTheDocument();
-    expect(screen.getByText(/nicht automatisch gesendet/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Meinen Weg entdecken/ })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Begleitung/ })).not.toBeInTheDocument();
   });
 
   it('beide Ausbildungsgänge sind wählbar, bleiben gespeichert und werden nicht vermischt', async () => {
@@ -53,21 +53,20 @@ describe('Geführter Ablauf', () => {
     await u.click(screen.getByRole('radio', { name: /01\.04\.2027/ }));
     expect(screen.getByText('30.09.2028')).toBeInTheDocument();
     expect(screen.getByText('18 Monate')).toBeInTheDocument();
-    expect(screen.getByText(/nicht reserviert oder garantiert/)).toBeInTheDocument();
     await u.click(screen.getByRole('radio', { name: /Noch offen/ }));
     expect(screen.queryByText('30.09.2028')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^Weiter/ })).toBeEnabled();
   });
 
-  it('Pflegefachkraft: zeigt die Abweichung zwischen veröffentlichtem und rechnerischem Ende', async () => {
+  it('Pflegefachkraft: zeigt das von Aschke veröffentlichte Ende ohne Hinweise auf Abweichungen', async () => {
     const u = userEvent.setup();
     renderApp();
     await u.click(screen.getByRole('button', { name: /Meinen Weg entdecken/ }));
     await u.click(screen.getByRole('radio', { name: /Pflegefachfrau/ }));
     await next(u);
     await u.click(screen.getByRole('radio', { name: /01\.04\.2027/ }));
-    expect(screen.getByText('31.03.2030')).toBeInTheDocument();
-    expect(screen.getByText(/Aschke nennt auf der Website als Ende den/)).toHaveTextContent('30.09.2030');
+    expect(screen.getByText('30.09.2030')).toBeInTheDocument();
+    expect(screen.queryByText(/Website/)).not.toBeInTheDocument();
   });
 
   it('vergangene Starttermine werden nicht angeboten; stattdessen „Noch offen“ und unverbindlicher Wunschmonat', async () => {
@@ -78,7 +77,7 @@ describe('Geführter Ablauf', () => {
     await u.click(screen.getByRole('radio', { name: /Pflegefachfrau/ }));
     await next(u);
     expect(screen.queryByRole('radio', { name: /01\.04\.2027/ })).not.toBeInTheDocument();
-    expect(screen.getByText(/keine verbindlichen Starttermine veröffentlicht/)).toBeInTheDocument();
+    expect(screen.getByText(/noch kein Starttermin veröffentlicht/)).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: /Noch offen/ })).toBeInTheDocument();
     expect(screen.getByLabelText('Wunschmonat')).toHaveAttribute('min', '2027-06');
   });
@@ -91,9 +90,9 @@ describe('Geführter Ablauf', () => {
     await next(u);
     await u.click(screen.getByRole('radio', { name: /Noch offen/ }));
     await next(u); // Ablauf
-    expect(screen.getByText(/Vereinfachtes Beispiel/)).toBeInTheDocument();
+    expect(screen.getByText(/Hier sammelst du Praxis/)).toBeInTheDocument();
     await next(u); // Vergütung
-    expect(screen.getByText('Keine verlässliche Angabe verfügbar')).toBeInTheDocument();
+    expect(screen.getByText(/hängt von deinem Ausbildungsträger ab/)).toBeInTheDocument();
     expect(screen.queryByText(/€/)).not.toBeInTheDocument();
     expect(screen.getByText(/Die tatsächliche Ausbildungsvergütung hängt von den Bedingungen/)).toBeInTheDocument();
   });
@@ -108,12 +107,14 @@ describe('Geführter Ablauf', () => {
     await next(u);
     await next(u);
     expect(screen.getAllByText(/Ausbildungsjahr/).length).toBeGreaterThanOrEqual(3);
-    expect(screen.getByText(/1\.490,69/)).toBeInTheDocument();
-    expect(screen.getByText(/Tarifabhängig/)).toBeInTheDocument();
+    // nur gerundete „ca.“-Beträge, keine festen Summen
+    expect(screen.getByText(/ca\. 1\.500\s?€/)).toBeInTheDocument();
+    expect(screen.getByText(/ca\. 1\.550\s?€/)).toBeInTheDocument();
+    expect(screen.getByText(/ca\. 1\.650\s?€/)).toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/1\.490|1\.552|1\.653/);
     await next(u); // Verdienst
-    expect(screen.getByText(/Median/, { selector: 'strong' })).toBeInTheDocument();
-    expect(screen.getByText(/4\.153 € – 4\.329 €/)).toBeInTheDocument();
-    expect(screen.queryByText(/netto:/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/ca\. 4\.100\s?€ – ca\. 4\.400\s?€|ca\. 4\.100\s?€\s?–\s?4\.400\s?€/)).toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/Median|4\.153|4\.329/);
   });
 
   it('vollständiger Durchlauf bis PDF und anschließendes Zurücksetzen ohne Datenreste', async () => {
@@ -123,8 +124,12 @@ describe('Geführter Ablauf', () => {
     await u.click(screen.getByRole('radio', { name: /Pflegefachassistenz/ }));
     await next(u);
     await u.click(screen.getByRole('radio', { name: /01\.04\.2027/ }));
-    for (let i = 0; i < 6; i++) await next(u); // Ablauf, Vergütung, Verdienst, Karriere, Check, Angebote
-    await next(u, /Weiter zu meinen Daten/);
+    for (let i = 0; i < 7; i++) await next(u); // Ablauf, Vergütung, Verdienst, Karriere, Check, Angebote, Beratung
+    // Beratung: erst die Entscheidung, danach (nur bei „Ja“) die Datenabfrage
+    expect(screen.getByRole('button', { name: /^Weiter/ })).toBeDisabled();
+    expect(screen.queryAllByRole('textbox')).toHaveLength(0);
+    await u.click(screen.getByRole('radio', { name: /Ja, ich möchte ein Beratungsgespräch/ }));
+    await next(u);
 
     // Formular: Validierung direkt am Feld
     await next(u);
@@ -155,13 +160,6 @@ describe('Geführter Ablauf', () => {
     expect(screen.getByRole('button', { name: /^Weiter/ })).toBeEnabled();
     await next(u);
 
-    // Beratung (optional, vorausgefüllt)
-    expect(screen.getByRole('button', { name: /Zur Zusammenfassung/ })).toBeDisabled();
-    await u.click(screen.getByRole('radio', { name: /Ich möchte einen Beratungstermin vereinbaren/ }));
-    expect(screen.getByText(/bereits notiert/)).toHaveTextContent('Pflegefachassistenz');
-    expect(screen.getByText(/kein Termin automatisch gebucht oder bestätigt/)).toBeInTheDocument();
-    await next(u, /Zur Zusammenfassung/);
-
     // Abschluss
     expect(screen.getByText('Erika Testfrau')).toBeInTheDocument();
     await waitFor(() => expect(screen.getByRole('button', { name: /PDF speichern/ })).toBeInTheDocument(), { timeout: 5000 });
@@ -177,6 +175,25 @@ describe('Geführter Ablauf', () => {
     await u.click(screen.getByRole('button', { name: /Meinen Weg entdecken/ }));
     expect(screen.getByRole('radio', { name: /Pflegefachassistenz/ })).not.toBeChecked();
   }, 30000);
+
+  it('„Nein“ beim Beratungsgespräch: keine Datenabfrage, Dankesseite ohne gespeicherte Daten', async () => {
+    const u = userEvent.setup();
+    renderApp();
+    await u.click(screen.getByRole('button', { name: /Meinen Weg entdecken/ }));
+    await u.click(screen.getByRole('radio', { name: /Pflegefachfrau/ }));
+    await next(u);
+    await u.click(screen.getByRole('radio', { name: /Noch offen/ }));
+    for (let i = 0; i < 7; i++) await next(u); // Ablauf … Angebote, dann Beratung
+    await u.click(screen.getByRole('radio', { name: /Nein, danke/ }));
+    expect(screen.getByRole('button', { name: /Fertig/ })).toBeEnabled();
+    await u.click(screen.getByRole('button', { name: /Fertig/ }));
+    expect(screen.getByRole('heading', { name: /Danke für dein Interesse/ })).toBeInTheDocument();
+    expect(screen.getByText(/keine Daten von dir gespeichert/)).toBeInTheDocument();
+    expect(screen.queryAllByRole('textbox')).toHaveLength(0);
+    expect(screen.queryByLabelText('Vorname')).not.toBeInTheDocument();
+    await u.click(screen.getByRole('button', { name: /Neu starten/ }));
+    expect(screen.getByRole('heading', { name: /Deine Zukunft/ })).toBeInTheDocument();
+  });
 
   it('Neustart-Button fragt nach und löscht die Eingaben', async () => {
     const u = userEvent.setup();

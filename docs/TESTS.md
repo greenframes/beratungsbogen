@@ -1,6 +1,6 @@
 # Durchgeführte Tests
 
-Ausführung: `npm test` (79 Tests, 8 Dateien) und `npm run test:e2e` (80 Prüfungen). Testdaten sind ausdrücklich synthetisch
+Ausführung: `npm test` (82 Tests, 8 Dateien) und `npm run test:e2e` (229 Prüfungen). Testdaten sind ausdrücklich synthetisch
 (z. B. „Erika Testfrau“, `example.org`) und kommen nicht in der produktiven App vor.
 
 ## Unit-/Integrationstests (Vitest)
@@ -29,8 +29,8 @@ Ausführung: `npm test` (79 Tests, 8 Dateien) und `npm run test:e2e` (80 Prüfun
 
 ## Browser-Prüfung (`e2e/run.mjs`, Chromium + iPad-Formate)
 
-Formate: iPad 820×1180 (hoch), 1180×820 (quer), iPad mini 744×1133 (hoch), iPad Pro 1366×1024 (quer).
-Je Format 15 Bildschirme: kein horizontaler Überlauf, keine Konsolenfehler, keine Anfragen an externe Server,
+Formate: 820×1180, 768×1024, 744×1133 (hoch); 1180×820, 1080×810, 1366×1024 (quer).
+Je Format alle Bildschirme (Ja- und Nein-Pfad): kein horizontaler Überlauf, **ohne Scrollen sichtbar**, keine Konsolenfehler, keine Anfragen an externe Server,
 Neustart funktioniert. Zusätzlich: PDF-Download mit neutralem Dateinamen, Speicher/Cookies/IndexedDB/URL leer,
 **Offline**-Betrieb (Seite lädt aus dem Cache, Navigation funktioniert, lokale Schrift geladen, Cache nur statisch).
 Screenshots entstehen unter `e2e/screenshots/` (nicht versioniert).
