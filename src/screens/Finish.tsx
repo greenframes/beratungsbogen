@@ -12,7 +12,7 @@ import { SCHOOL_LEAVING_LABELS } from '../utils/eligibility';
 import { minorNotice } from '../utils/consent';
 import type { Nav } from './types';
 
-type Build = { state: 'building' } | { state: 'ready'; blob: Blob; at: Date } | { state: 'error' };
+type Build = { state: 'building' } | { state: 'ready'; blob: Blob; url: string; at: Date } | { state: 'error'; reason: string };
 
 export const Finish = ({ nav }: { nav: Nav }) => {
   const { session } = useSession();
@@ -23,6 +23,7 @@ export const Finish = ({ nav }: { nav: Nav }) => {
 
   useEffect(() => {
     let cancelled = false;
+    let url: string | undefined;
     (async () => {
       try {
         // jsPDF wird erst hier nachgeladen (nicht im Start-Bundle)
@@ -30,13 +31,16 @@ export const Finish = ({ nav }: { nav: Nav }) => {
         logoRef.current ??= await loadLogo(logo);
         const at = new Date();
         const blob = buildPdfBlob({ session, now: at }, { logoPng: logoRef.current });
-        if (!cancelled) setBuild({ state: 'ready', blob, at });
-      } catch {
-        if (!cancelled) setBuild({ state: 'error' });
+        // Vorab erzeugte Objekt-URL: zusätzlicher „PDF ansehen“-Weg, der auf dem iPad ohne Teilen-Dialog funktioniert
+        url = URL.createObjectURL(blob);
+        if (!cancelled) setBuild({ state: 'ready', blob, url, at });
+      } catch (err) {
+        if (!cancelled) setBuild({ state: 'error', reason: err instanceof Error ? err.name : 'Fehler' });
       }
     })();
     return () => {
       cancelled = true;
+      if (url) URL.revokeObjectURL(url);
     };
   }, [session]);
 
@@ -73,12 +77,13 @@ export const Finish = ({ nav }: { nav: Nav }) => {
         <div className="card stack" aria-live="polite">
           <h3>Interessentenbogen (PDF)</h3>
           {build.state === 'building' && <div className="row"><Loader2 className="spin" size={22} aria-hidden /> PDF wird lokal auf diesem Gerät erstellt …</div>}
-          {build.state === 'error' && <Notice kind="danger"><p>Die PDF konnte nicht erstellt werden. Bitte gehe zurück und prüfe die Angaben, oder wende dich an eine Mitarbeiterin bzw. einen Mitarbeiter.</p></Notice>}
+          {build.state === 'error' && <Notice kind="danger"><p>Die PDF konnte nicht erstellt werden ({build.reason}). Bitte gehe zurück und prüfe die Angaben, oder wende dich an eine Mitarbeiterin bzw. einen Mitarbeiter.</p></Notice>}
           {build.state === 'ready' && (
             <>
               <p className="muted small" style={{ margin: 0 }}>{pdfFilename(build.at)} · {fmtDateTime(build.at)}</p>
               <div className="row">
                 <Button size="lg" onClick={save} disabled={busy}><FileDown size={24} aria-hidden /> {busy ? 'Bitte warten …' : 'PDF speichern / teilen'}</Button>
+                <a className="btn btn-secondary btn-lg" href={build.url} target="_blank" rel="noopener">PDF ansehen</a>
               </div>
             </>
           )}
