@@ -7,7 +7,7 @@ export const periodLines = (s: Session): string[] => {
   switch (s.start.kind) {
     case 'confirmed': {
       const p = planPeriod(prog, s.start.date);
-      return [`Gewünschter Start: ${fmtDate(s.start.date)}`, `Voraussichtliches Ende: ${fmtDate(p.publishedEndISO ?? p.computedEndISO)}`];
+      return [`Gewünschter Start: ${fmtDate(s.start.date)}`, `Voraussichtliches Ende: ${fmtDate(p.computedEndISO)}`];
     }
     case 'hypothetical':
       return [`Gewünschter Start: ${fmtDate(s.start.date)}`, `Voraussichtliches Ende: ${fmtDate(computeEnd(prog, s.start.date))}`];

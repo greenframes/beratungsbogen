@@ -59,18 +59,19 @@ describe('Geführter Ablauf', () => {
     expect(screen.getByRole('button', { name: /^Weiter/ })).toBeEnabled();
   });
 
-  it('Pflegefachkraft: zeigt das von Aschke veröffentlichte Ende ohne Hinweise auf Abweichungen', async () => {
+  it('Pflegefachkraft: rechnet mit 3 Jahren – Ende 31.03.2030', async () => {
     const u = userEvent.setup();
     renderApp();
     await u.click(screen.getByRole('button', { name: /Meinen Weg entdecken/ }));
     await u.click(screen.getByRole('radio', { name: /Pflegefachfrau/ }));
     await next(u);
     setStart('2027-04-01');
-    expect(screen.getByText('30.09.2030')).toBeInTheDocument();
+    expect(screen.getByText('31.03.2030')).toBeInTheDocument();
+    expect(screen.queryByText('30.09.2030')).not.toBeInTheDocument();
     expect(screen.queryByText(/Website/)).not.toBeInTheDocument();
   });
 
-  it('Startdatum: einfaches Eingabefeld; Vergangenheit wird abgelehnt, ein bekannter Kursstart nutzt das veröffentlichte Ende', async () => {
+  it('Startdatum: einfaches Eingabefeld; Vergangenheit wird abgelehnt, das Ende wird aus der Regeldauer berechnet', async () => {
     const u = userEvent.setup();
     renderApp();
     await u.click(screen.getByRole('button', { name: /Meinen Weg entdecken/ }));
@@ -82,10 +83,10 @@ describe('Geführter Ablauf', () => {
     setStart('2026-01-01');
     expect(screen.getByText(/in der Zukunft/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^Weiter/ })).toBeDisabled();
-    setStart('2027-09-01'); // kein veröffentlichter Kursstart → rechnerisches Ende (18 Monate)
+    setStart('2027-09-01'); // Ende immer rechnerisch aus der Regeldauer (18 Monate)
     expect(screen.getByText('28.02.2029')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^Weiter/ })).toBeEnabled();
-    setStart('2027-04-01'); // bekannter Start → veröffentlichtes Ende
+    setStart('2027-04-01');
     expect(screen.getByText('30.09.2028')).toBeInTheDocument();
   });
 

@@ -48,8 +48,8 @@ describe('PDF-Interessentenbogen', () => {
     expect(t).toContain('Hinweis für die Bearbeitung');
     expect(t).toContain('Sorgeberechtigten');
   });
-  it('nennt für einen bestätigten Termin das von Aschke veröffentlichte Ende, sonst das berechnete', () => {
-    expect(text(sample({ program: 'fachkraft' }))).toContain('Voraussichtliches Ende: 30.09.2030');
+  it('rechnet das Ende immer aus der Regeldauer (Fachkraft 3 Jahre → 31.03.2030)', () => {
+    expect(text(sample({ program: 'fachkraft' }))).toContain('Voraussichtliches Ende: 31.03.2030');
     expect(text(sample({ start: { kind: 'hypothetical', date: '2027-07-01' } }))).toContain('Voraussichtliches Ende: 31.12.2028');
   });
   it('enthält keine Quellen- oder Website-Hinweise', () => {

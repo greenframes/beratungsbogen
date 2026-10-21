@@ -17,7 +17,7 @@ export const StartDate = ({ nav }: { nav: Nav }) => {
 
   const start = session.start;
   const period = start.kind === 'confirmed' || start.kind === 'hypothetical' ? planPeriod(program, start.date) : null;
-  const endISO = period ? period.publishedEndISO ?? period.computedEndISO : '';
+  const endISO = period ? period.computedEndISO : '';
 
   const onChange = (v: string) => {
     setValue(v);

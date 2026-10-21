@@ -4,7 +4,7 @@
 
 | # | Thema | Stand / Problem | Wo in der App/Code |
 |---|-------|-----------------|--------------------|
-| A1 | **Ende der Pflegefachkraft-Ausbildung** | Website: „3 Jahre“, aber Zeitraum 01.04.2027 bis 30.09.2030 (= 3½ Jahre). § 6 PflBG: 3 Jahre Vollzeit. Die App zeigt nur das von Aschke veröffentlichte Ende (30.09.2030); rechnerisch wären es 31.03.2030. | `START_TERMS`, Bildschirm 3, PDF |
+| A1 | **Ende der Pflegefachkraft-Ausbildung** | Website: „3 Jahre“, aber Zeitraum 01.04.2027 bis 30.09.2030 (= 3½ Jahre). § 6 PflBG: 3 Jahre Vollzeit. Die App rechnet bewusst mit 3 Jahren (Ende 31.03.2030) und zeigt das veröffentlichte Ende 30.09.2030 nicht an – Website-Angabe bei Gelegenheit angleichen. | `START_TERMS`, Bildschirm 3, PDF |
 | A2 | **Weitere Starttermine** | Veröffentlicht ist nur 01.04.2027 (beide Ausbildungen). Weitere Termine nicht bekannt – nichts erfunden. | `src/data/config.ts` |
 | A3 | **Ausbildungsvergütung Fachkraft** | Nur tarifliches Beispiel (TVAöD-Pflege, ab 01.05.2026: 1.490,69 / 1.552,07 / 1.653,38 € brutto). Quelle ist eine nicht amtliche Lesefassung (Stadt Dresden). Zuordnung „§ 1 Abs. 1 Buchst. b = Pflegefachfrau/-mann“ nur über Sekundärangaben belegt → gegen den amtlichen TVAöD prüfen. Tarifstand für Start 2027 offen. Praxisträger und deren Tarifbindung sind nicht bekannt. | `pay.fk.*` |
 | A4 | **Ausbildungsvergütung Pflegefachassistenz** | Keine belegte Tabelle. Gesetzlich nur „angemessene Vergütung“ (§ 17 PflFAssG). Die App zeigt „Keine verlässliche Angabe verfügbar“. | `pay.fa.table` |

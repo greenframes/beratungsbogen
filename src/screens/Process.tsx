@@ -17,7 +17,7 @@ export const Process = ({ nav }: { nav: Nav }) => {
   const practice = num(fk ? 'fk.hours.practice' : 'fa.hours.practice');
   const months = num(fk ? 'fk.duration.months' : 'fa.duration.months');
   const period = session.start.kind === 'confirmed' || session.start.kind === 'hypothetical' ? planPeriod(program, session.start.date) : null;
-  const endISO = period ? period.publishedEndISO ?? period.computedEndISO : null;
+  const endISO = period ? period.computedEndISO : null;
   const blocks = fk ? 12 : 6;
 
   return (
