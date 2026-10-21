@@ -1,6 +1,6 @@
 import { FooterNav } from '../components/Layout';
 import { ScreenTitle } from '../components/ui';
-import { approxEur, num } from '../data/facts';
+import { approxEur, approxRange, num } from '../data/facts';
 import { useSession } from '../state/session';
 import type { Nav } from './types';
 
@@ -29,9 +29,10 @@ export const Pay = ({ nav }: { nav: Nav }) => {
           </div>
         </div>
       ) : (
-        <div className="card stack">
-          <h3 style={{ marginBottom: 0 }}>Pflegefachassistenz – 18 Monate</h3>
-          <p style={{ margin: 0 }}>Die Höhe deiner Vergütung hängt von deinem Ausbildungsträger ab. Wir sagen dir im Gespräch, womit du rechnen kannst.</p>
+        <div className="card stack" style={{ padding: 'var(--sp-5)' }}>
+          <div className="chips"><span className="chip">brutto pro Monat · Durchschnitt in NRW</span></div>
+          <div className="big-range">{approxRange(num('pay.fa.lo'), num('pay.fa.hi'), 50).label}</div>
+          <p style={{ margin: 0 }}>Die genaue Höhe hängt von deinem Ausbildungsträger ab. Dauer: 18 Monate.</p>
         </div>
       )}
       <FooterNav onBack={nav.back} onNext={nav.next} />

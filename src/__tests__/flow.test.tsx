@@ -101,7 +101,9 @@ describe('Geführter Ablauf', () => {
     expect(screen.getByText(/Hier sammelst du Praxis/)).toBeInTheDocument();
     await next(u); // Vergütung
     expect(screen.getByText(/hängt von deinem Ausbildungsträger ab/)).toBeInTheDocument();
-    expect(screen.queryByText(/€/)).not.toBeInTheDocument();
+    // Durchschnitt NRW als gerundete Spanne; keine Staffelung nach Abschnitten
+    expect(screen.getByText(/ca\. 1\.300\s?€ – ca\. 1\.450\s?€|ca\. 1\.300\s?€\s?–\s?1\.450\s?€/)).toBeInTheDocument();
+    expect(screen.queryByText(/Ausbildungsjahr/)).not.toBeInTheDocument();
     expect(screen.getByText(/Die tatsächliche Ausbildungsvergütung hängt von den Bedingungen/)).toBeInTheDocument();
   });
 

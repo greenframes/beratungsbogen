@@ -71,6 +71,14 @@ export const SOURCES: Source[] = [
     retrieved: RETRIEVED,
   },
   {
+    id: 'aschke-angabe',
+    title: 'Angabe des Auftraggebers zur Ausbildungsvergütung Pflegefachassistenz in NRW (Projektvorgabe vom 21.10.2026)',
+    publisher: 'Aschke Seminare und Qualifizierung GmbH',
+    url: 'https://www.aschke-seminare.de/',
+    retrieved: RETRIEVED,
+    note: 'Durchschnittswert für NRW, vom Auftraggeber im Projekt genannt; schriftlichen Beleg (z. B. Tarif/Träger-Auskunft) nachreichen.',
+  },
+  {
     id: 'pflbg',
     title: 'Gesetz über die Pflegeberufe (Pflegeberufegesetz – PflBG), §§ 6, 7, 11, 12, 19',
     publisher: 'Bundesministerium der Justiz / Gesetze im Internet',

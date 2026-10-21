@@ -44,11 +44,12 @@ describe('Faktenbasis', () => {
     expect(sum(['fa.practice.acute', 'fa.practice.longterm', 'fa.practice.ambulatory', 'fa.practice.extension', 'fa.practice.free'])).toBe(num('fa.hours.practice'));
     expect(num('fa.hours.theory') + num('fa.hours.practice')).toBe(num('fa.hours.total'));
   });
-  it('Ausbildungsvergütung: drei Jahre, aufsteigend, Pflegefachassistenz ohne erfundene Beträge', () => {
+  it('Ausbildungsvergütung: drei Jahre aufsteigend; Pflegefachassistenz nur als Spanne ohne erfundene Abschnittserhöhungen', () => {
     expect(num('pay.fk.y1')).toBeLessThan(num('pay.fk.y2'));
     expect(num('pay.fk.y2')).toBeLessThan(num('pay.fk.y3'));
-    expect(fact('pay.fa.table').value).toBeNull();
-    expect(fact('pay.fa.table').status).toBe('unconfirmed');
+    expect(num('pay.fa.lo')).toBeLessThan(num('pay.fa.hi'));
+    expect(fact('pay.fa.lo').sources).toContain('aschke-angabe');
+    expect(FACTS.filter((f) => f.id.startsWith('pay.fa.'))).toHaveLength(2);
   });
   it('Gehaltsangaben benennen Median, Stichtag und Quelle', () => {
     for (const id of ['inc.fk.kranken', 'inc.fk.alten', 'inc.fa.kranken', 'inc.fa.alten']) {
