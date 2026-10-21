@@ -1,0 +1,67 @@
+/* Design-Tokens – Farben und Schriften aus dem Erscheinungsbild von aschke-seminare.de
+   (Rosa #f39ca5 / #ef8f9c, Anthrazit #45434a, Text #666; Schriften Hanken Grotesk + Cormorant Garamond) */
+@font-face { font-family: 'Hanken Grotesk'; font-weight: 400; font-style: normal; font-display: swap; src: url('../assets/fonts/hanken-grotesk-v12-latin-regular.woff2') format('woff2'); }
+@font-face { font-family: 'Hanken Grotesk'; font-weight: 500; font-style: normal; font-display: swap; src: url('../assets/fonts/hanken-grotesk-v12-latin-500.woff2') format('woff2'); }
+@font-face { font-family: 'Hanken Grotesk'; font-weight: 600; font-style: normal; font-display: swap; src: url('../assets/fonts/hanken-grotesk-v12-latin-600.woff2') format('woff2'); }
+@font-face { font-family: 'Hanken Grotesk'; font-weight: 700; font-style: normal; font-display: swap; src: url('../assets/fonts/hanken-grotesk-v12-latin-700.woff2') format('woff2'); }
+@font-face { font-family: 'Cormorant Garamond'; font-weight: 500; font-style: normal; font-display: swap; src: url('../assets/fonts/cormorant-garamond-v21-latin-500.woff2') format('woff2'); }
+@font-face { font-family: 'Cormorant Garamond'; font-weight: 600; font-style: normal; font-display: swap; src: url('../assets/fonts/cormorant-garamond-v21-latin-600.woff2') format('woff2'); }
+
+:root {
+  /* Farben */
+  --c-pink-50: #fdecef;
+  --c-pink-100: #fbd9de;
+  --c-pink-300: #f39ca5;
+  --c-pink-400: #ef8f9c;
+  --c-pink-600: #c24d5b;
+  --c-pink-700: #a63f4c;
+  --c-ink: #45434a;
+  --c-text: #535159;
+  --c-muted: #6b6970;
+  --c-line: #e7e3e5;
+  --c-bg: #fffafb;
+  --c-surface: #ffffff;
+  --c-blue: #2f6fc4;
+  --c-blue-50: #eaf2fd;
+  --c-ok: #2f7a4f;
+  --c-ok-50: #e8f5ed;
+  --c-warn: #8a5a00;
+  --c-warn-50: #fff4dc;
+  --c-danger: #b3261e;
+  --c-danger-50: #fdecea;
+
+  /* Schrift */
+  --font-body: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --fs-xs: 0.8125rem;
+  --fs-sm: 0.9375rem;
+  --fs-md: 1.125rem;
+  --fs-lg: 1.375rem;
+  --fs-xl: 1.875rem;
+  --fs-2xl: 2.5rem;
+  --fs-3xl: 3.5rem;
+
+  /* Abstände */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+  --sp-8: 4rem;
+
+  /* Radien, Schatten */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 24px;
+  --r-pill: 999px;
+  --shadow-1: 0 1px 2px rgba(69, 67, 74, 0.08), 0 4px 14px rgba(69, 67, 74, 0.06);
+  --shadow-2: 0 2px 4px rgba(69, 67, 74, 0.1), 0 12px 32px rgba(69, 67, 74, 0.12);
+
+  /* Touch & Layout (Breakpoints als Referenz: 768px iPad hochkant, 1024px quer, 1366px iPad Pro quer) */
+  --touch: 56px;
+  --content-max: 1120px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur: 220ms;
+}

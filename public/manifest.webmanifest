@@ -1,0 +1,9 @@
+{
+  "name": "Ausbildungsberatung – Aschke Pflegeschule Hagen",
+  "short_name": "Aschke Beratung",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fdecef",
+  "theme_color": "#f39ca5",
+  "lang": "de"
+}
