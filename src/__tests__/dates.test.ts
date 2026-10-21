@@ -45,11 +45,12 @@ describe('Starttermine', () => {
   it('alle konfigurierten Termine haben Quelle und gültiges Datum', () => {
     for (const terms of Object.values(START_TERMS)) for (const t of terms) { expect(t.sourceId).toMatch(/^aschke-/); expect(() => parseISODate(t.date)).not.toThrow(); }
   });
-  it('unverbindlicher Wunschmonat muss in der Zukunft liegen', () => {
+  it('freies Startdatum muss in der Zukunft (und höchstens 5 Jahre voraus) liegen', () => {
     const today = new Date(2026, 9, 21);
-    expect(earliestHypotheticalStart(today)).toBe('2026-11-01');
-    expect(isFutureHypotheticalStart('2026-10-01', today)).toBe(false);
-    expect(isFutureHypotheticalStart('2026-11-01', today)).toBe(true);
+    expect(earliestHypotheticalStart(today)).toBe('2026-10-22');
+    expect(isFutureHypotheticalStart('2026-10-21', today)).toBe(false);
+    expect(isFutureHypotheticalStart('2026-10-22', today)).toBe(true);
+    expect(isFutureHypotheticalStart('2040-01-01', today)).toBe(false);
     expect(isFutureHypotheticalStart('kaputt', today)).toBe(false);
   });
 });

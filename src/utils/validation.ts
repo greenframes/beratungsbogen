@@ -64,7 +64,7 @@ export const validateStartChoice = (program: ProgramId | null, start: StartChoic
         ? undefined
         : 'Dieser Starttermin ist nicht (mehr) verfügbar. Bitte wähle erneut.';
     case 'hypothetical':
-      return isFutureHypotheticalStart(start.date, today) ? undefined : 'Der Wunschmonat muss in der Zukunft liegen.';
+      return isFutureHypotheticalStart(start.date, today) ? undefined : 'Das Startdatum muss in der Zukunft liegen.';
   }
 };
 

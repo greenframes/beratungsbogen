@@ -70,7 +70,7 @@ try {
     await radio(/Pflegefachfrau/);
     await shot('ausbildung');
     await next();
-    await radio(/01\.04\.2027/);
+    await page.fill('#start-date', '2027-04-01');
     await shot('start');
     await next();
     await shot('ablauf');
@@ -125,7 +125,7 @@ try {
     await click(/Meinen Weg entdecken/);
     await radio(/Pflegefachassistenz/);
     await next();
-    await radio(/Noch offen/);
+    await page.getByRole('button', { name: /Noch offen/ }).click();
     for (let i = 0; i < 7; i++) await next();
     await radio(/Nein, danke/);
     await click(/Fertig/);

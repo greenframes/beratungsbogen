@@ -1,5 +1,5 @@
 import type { Session } from '../types';
-import { computeEnd, fmtDate, fmtMonthYear, planPeriod } from './dates';
+import { computeEnd, fmtDate, planPeriod } from './dates';
 
 export const periodLines = (s: Session): string[] => {
   if (!s.program) return ['Keine Ausbildung gewählt'];
@@ -7,10 +7,10 @@ export const periodLines = (s: Session): string[] => {
   switch (s.start.kind) {
     case 'confirmed': {
       const p = planPeriod(prog, s.start.date);
-      return [`Start: ${fmtDate(s.start.date)}`, `Voraussichtliches Ende: ${fmtDate(p.publishedEndISO ?? p.computedEndISO)}`];
+      return [`Gewünschter Start: ${fmtDate(s.start.date)}`, `Voraussichtliches Ende: ${fmtDate(p.publishedEndISO ?? p.computedEndISO)}`];
     }
     case 'hypothetical':
-      return [`Wunschmonat: ${fmtMonthYear(s.start.date)} (unverbindlich, kein bestätigter Kursstart)`, `Voraussichtliches Ende: ${fmtDate(computeEnd(prog, s.start.date))}`];
+      return [`Gewünschter Start: ${fmtDate(s.start.date)}`, `Voraussichtliches Ende: ${fmtDate(computeEnd(prog, s.start.date))}`];
     case 'open':
       return ['Noch offen – Beratung zum Starttermin gewünscht'];
     default:

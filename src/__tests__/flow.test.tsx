@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from '../App';
 import { IdleGuard } from '../components/Idle';
@@ -6,6 +6,7 @@ import { SessionProvider } from '../state/session';
 import { POLICY } from '../data/config';
 
 const renderApp = () => render(<SessionProvider><App /></SessionProvider>);
+const setStart = (iso: string) => fireEvent.change(screen.getByLabelText('Startdatum'), { target: { value: iso } });
 const next = (u: ReturnType<typeof userEvent.setup>, name = /^Weiter/) => u.click(screen.getByRole('button', { name }));
 
 beforeEach(() => {
@@ -43,17 +44,17 @@ describe('Geführter Ablauf', () => {
     expect(screen.getByRole('radio', { name: /Pflegefachassistenz/ })).toBeChecked();
   });
 
-  it('Starttermin: berechnet Zeitraum, weist auf fehlende Platzgarantie hin und zeigt „Noch offen“', async () => {
+  it('Starttermin: berechnet Zeitraum und bietet „Noch offen“ an', async () => {
     const u = userEvent.setup();
     renderApp();
     await u.click(screen.getByRole('button', { name: /Meinen Weg entdecken/ }));
     await u.click(screen.getByRole('radio', { name: /Pflegefachassistenz/ }));
     await next(u);
     expect(screen.getByRole('button', { name: /^Weiter/ })).toBeDisabled();
-    await u.click(screen.getByRole('radio', { name: /01\.04\.2027/ }));
+    setStart('2027-04-01');
     expect(screen.getByText('30.09.2028')).toBeInTheDocument();
     expect(screen.getByText('18 Monate')).toBeInTheDocument();
-    await u.click(screen.getByRole('radio', { name: /Noch offen/ }));
+    await u.click(screen.getByRole('button', { name: /Noch offen/ }));
     expect(screen.queryByText('30.09.2028')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^Weiter/ })).toBeEnabled();
   });
@@ -64,22 +65,28 @@ describe('Geführter Ablauf', () => {
     await u.click(screen.getByRole('button', { name: /Meinen Weg entdecken/ }));
     await u.click(screen.getByRole('radio', { name: /Pflegefachfrau/ }));
     await next(u);
-    await u.click(screen.getByRole('radio', { name: /01\.04\.2027/ }));
+    setStart('2027-04-01');
     expect(screen.getByText('30.09.2030')).toBeInTheDocument();
     expect(screen.queryByText(/Website/)).not.toBeInTheDocument();
   });
 
-  it('vergangene Starttermine werden nicht angeboten; stattdessen „Noch offen“ und unverbindlicher Wunschmonat', async () => {
-    vi.setSystemTime(new Date(2027, 4, 1));
+  it('Startdatum: einfaches Eingabefeld; Vergangenheit wird abgelehnt, ein bekannter Kursstart nutzt das veröffentlichte Ende', async () => {
     const u = userEvent.setup();
     renderApp();
     await u.click(screen.getByRole('button', { name: /Meinen Weg entdecken/ }));
-    await u.click(screen.getByRole('radio', { name: /Pflegefachfrau/ }));
+    await u.click(screen.getByRole('radio', { name: /Pflegefachassistenz/ }));
     await next(u);
-    expect(screen.queryByRole('radio', { name: /01\.04\.2027/ })).not.toBeInTheDocument();
-    expect(screen.getByText(/noch kein Starttermin veröffentlicht/)).toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: /Noch offen/ })).toBeInTheDocument();
-    expect(screen.getByLabelText('Wunschmonat')).toHaveAttribute('min', '2027-06');
+    const input = screen.getByLabelText('Startdatum');
+    expect(input).toHaveAttribute('type', 'date');
+    expect(input).toHaveAttribute('min', '2026-10-22');
+    setStart('2026-01-01');
+    expect(screen.getByText(/in der Zukunft/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Weiter/ })).toBeDisabled();
+    setStart('2027-09-01'); // kein veröffentlichter Kursstart → rechnerisches Ende (18 Monate)
+    expect(screen.getByText('28.02.2029')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Weiter/ })).toBeEnabled();
+    setStart('2027-04-01'); // bekannter Start → veröffentlichtes Ende
+    expect(screen.getByText('30.09.2028')).toBeInTheDocument();
   });
 
   it('Vergütung der Pflegefachassistenz: keine erfundenen Beträge', async () => {
@@ -88,7 +95,7 @@ describe('Geführter Ablauf', () => {
     await u.click(screen.getByRole('button', { name: /Meinen Weg entdecken/ }));
     await u.click(screen.getByRole('radio', { name: /Pflegefachassistenz/ }));
     await next(u);
-    await u.click(screen.getByRole('radio', { name: /Noch offen/ }));
+    await u.click(screen.getByRole('button', { name: /Noch offen/ }));
     await next(u); // Ablauf
     expect(screen.getByText(/Hier sammelst du Praxis/)).toBeInTheDocument();
     await next(u); // Vergütung
@@ -103,7 +110,7 @@ describe('Geführter Ablauf', () => {
     await u.click(screen.getByRole('button', { name: /Meinen Weg entdecken/ }));
     await u.click(screen.getByRole('radio', { name: /Pflegefachfrau/ }));
     await next(u);
-    await u.click(screen.getByRole('radio', { name: /Noch offen/ }));
+    await u.click(screen.getByRole('button', { name: /Noch offen/ }));
     await next(u);
     await next(u);
     expect(screen.getAllByText(/Ausbildungsjahr/).length).toBeGreaterThanOrEqual(3);
@@ -123,7 +130,7 @@ describe('Geführter Ablauf', () => {
     await u.click(screen.getByRole('button', { name: /Meinen Weg entdecken/ }));
     await u.click(screen.getByRole('radio', { name: /Pflegefachassistenz/ }));
     await next(u);
-    await u.click(screen.getByRole('radio', { name: /01\.04\.2027/ }));
+    setStart('2027-04-01');
     for (let i = 0; i < 7; i++) await next(u); // Ablauf, Vergütung, Verdienst, Karriere, Check, Angebote, Beratung
     // Beratung: erst die Entscheidung, danach (nur bei „Ja“) die Datenabfrage
     expect(screen.getByRole('button', { name: /^Weiter/ })).toBeDisabled();
@@ -182,7 +189,7 @@ describe('Geführter Ablauf', () => {
     await u.click(screen.getByRole('button', { name: /Meinen Weg entdecken/ }));
     await u.click(screen.getByRole('radio', { name: /Pflegefachfrau/ }));
     await next(u);
-    await u.click(screen.getByRole('radio', { name: /Noch offen/ }));
+    await u.click(screen.getByRole('button', { name: /Noch offen/ }));
     for (let i = 0; i < 7; i++) await next(u); // Ablauf … Angebote, dann Beratung
     await u.click(screen.getByRole('radio', { name: /Nein, danke/ }));
     expect(screen.getByRole('button', { name: /Fertig/ })).toBeEnabled();

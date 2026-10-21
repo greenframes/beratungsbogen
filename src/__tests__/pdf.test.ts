@@ -38,8 +38,8 @@ describe('PDF-Interessentenbogen', () => {
   });
   it('kennzeichnet hypothetische Startwünsche und leitet keinen bestätigten Kursstart ab', () => {
     const t = text(sample({ start: { kind: 'hypothetical', date: '2027-09-01' } }));
-    expect(t).toContain('unverbindlich');
-    expect(t).toContain('kein bestätigter Kursstart');
+    expect(t).toContain('Gewünschter Start: 01.09.2027');
+    expect(t).toContain('Voraussichtliches Ende: 28.02.2029');
   });
   it('zeigt bei Minderjährigen einen Bearbeitungshinweis und keine zusätzliche Einwilligung', () => {
     const s = sample();

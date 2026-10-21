@@ -81,12 +81,12 @@ export const upcomingTerms = (program: ProgramId, today: Date, terms: StartTerm[
     .sort((a, b) => a.date.localeCompare(b.date));
 };
 
-/** Frühester wählbarer Wunschmonat für einen unverbindlichen Startwunsch: der nächste Monatserste nach heute. */
+/** Frühestes wählbares Startdatum: morgen (ein Start muss in der Zukunft liegen). */
 export const earliestHypotheticalStart = (today: Date): string =>
-  toISODate(new Date(today.getFullYear(), today.getMonth() + 1, 1));
+  toISODate(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1));
 
 export const isFutureHypotheticalStart = (iso: string, today: Date): boolean =>
-  isValidISODate(iso) && iso >= earliestHypotheticalStart(today);
+  isValidISODate(iso) && iso >= earliestHypotheticalStart(today) && iso <= toISODate(new Date(today.getFullYear() + 5, today.getMonth(), today.getDate()));
 
 export const fmtDate = (iso: string): string =>
   parseISODate(iso).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
