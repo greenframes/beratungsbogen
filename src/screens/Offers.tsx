@@ -1,23 +1,10 @@
-import { ExternalLink as ExtIcon } from 'lucide-react';
+import { ArrowDown } from 'lucide-react';
 import { FooterNav } from '../components/Layout';
-import { ExternalLink, ScreenTitle } from '../components/ui';
+import { ScreenTitle } from '../components/ui';
 import { COURSES, type Course } from '../data/courses';
-import { START_TERMS } from '../data/config';
 import { fact, hours } from '../data/facts';
 import { useSession } from '../state/session';
-import { fmtDate, parseISODate, upcomingTerms } from '../utils/dates';
 import type { Nav } from './types';
-
-const nextDate = (c: Course, today: Date): string | null => {
-  if (c.group === 'einstieg') {
-    const id = c.id === 'fachkraft' ? 'fachkraft' : 'assistenz';
-    const t = upcomingTerms(id, today, START_TERMS[id])[0];
-    return t ? `Start ${fmtDate(t.date)}` : null;
-  }
-  const t0 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const d = (c.dates ?? []).find((x) => parseISODate(x.to).getTime() >= t0.getTime());
-  return d ? `Nächster Termin ${fmtDate(d.from)}` : null;
-};
 
 const durationOf = (c: Course): string | null => {
   if (!c.durationFactId) return null;
@@ -29,41 +16,38 @@ const durationOf = (c: Course): string | null => {
 
 const TARGET: Record<string, string> = { fachkraft: 'Berufseinsteiger', assistenz: 'Berufseinsteiger', praxisanleitung: 'Pflegefachkräfte', refresher: 'Praxisanleitende', palliative: 'Pflegefachkräfte' };
 
-const Offer = ({ c, today, mine }: { c: Course; today: Date; mine: boolean }) => {
+const Offer = ({ c, mine }: { c: Course; mine: boolean }) => {
   const dur = durationOf(c);
-  const date = nextDate(c, today);
   return (
     <article className="card offer" style={mine ? { borderColor: 'var(--c-pink-600)', borderWidth: 2 } : undefined}>
       <div className="chips">
         {mine && <span className="chip">Deine Wahl</span>}
         {dur && <span className="chip blue">{dur}</span>}
-        <span className="chip warn">{date ?? 'Termin auf Anfrage'}</span>
       </div>
       <h4>{c.title}</h4>
       <p className="sum">{c.summary}</p>
-      <p style={{ WebkitLineClamp: 1 }}><strong>Zielgruppe:</strong> {TARGET[c.id] ?? 'Pflegefachkräfte'}</p>
-      <ExternalLink href={c.url} className="btn btn-secondary btn-sm" >Mehr erfahren <ExtIcon size={16} aria-hidden /></ExternalLink>
+      <p style={{ WebkitLineClamp: 1 }}><strong>Für:</strong> {TARGET[c.id] ?? 'Pflegefachkräfte'}</p>
     </article>
   );
 };
 
 export const Offers = ({ nav }: { nav: Nav }) => {
   const { session } = useSession();
-  const today = new Date();
   const einstieg = COURSES.filter((c) => c.group === 'einstieg').sort((a) => (a.id === session.program ? -1 : 1));
   const wb = COURSES.filter((c) => c.group === 'weiterbildung');
   return (
     <section className="screen">
-      <ScreenTitle title="Was bietet Aschke dir?" />
+      <ScreenTitle title="So begleitet dich Aschke" lead="Von der Ausbildung bis zur Weiterbildung – wir sind auf deinem Karriereweg dabei." />
       <div className="stack">
-        <h3 style={{ margin: 0 }}>Für den Berufseinstieg</h3>
-        <div className="offers-grid">{einstieg.map((c) => <Offer key={c.id} c={c} today={today} mine={c.id === session.program} />)}</div>
+        <h3 style={{ margin: 0 }}>1 · Dein Einstieg bei uns</h3>
+        <div className="offers-grid">{einstieg.map((c) => <Offer key={c.id} c={c} mine={c.id === session.program} />)}</div>
       </div>
+      <div className="row" style={{ justifyContent: 'center', color: 'var(--c-pink-700)' }} aria-hidden><ArrowDown size={28} /></div>
       <div className="stack">
-        <h3 style={{ margin: 0 }}>Weiterbildungen für später <span className="small muted" style={{ fontWeight: 500 }}>– erst nach abgeschlossener Pflegeausbildung</span></h3>
-        <div className="offers-grid">{wb.map((c) => <Offer key={c.id} c={c} today={today} mine={false} />)}</div>
+        <h3 style={{ margin: 0 }}>2 · Danach: Weiterbildungen bei uns <span className="small muted" style={{ fontWeight: 500 }}>– nach abgeschlossener Pflegeausbildung</span></h3>
+        <div className="offers-grid">{wb.map((c) => <Offer key={c.id} c={c} mine={false} />)}</div>
       </div>
-      <FooterNav onBack={nav.back} onNext={nav.next} nextLabel="Weiter" />
+      <FooterNav onBack={nav.back} onNext={nav.next} />
     </section>
   );
 };
