@@ -90,15 +90,32 @@ describe('Fehlerbehandlung beim PDF-Export', () => {
   };
   afterEach(restore);
 
-  it('nutzt den nativen Teilen-Dialog, wenn verfügbar, und behauptet kein „gespeichert“', async () => {
+  const touch = (n: number) => Object.defineProperty(navigator, 'maxTouchPoints', { value: n, configurable: true });
+  afterEach(() => touch(0));
+
+  it('am Rechner (kein Touch) wird heruntergeladen, auch wenn der Browser einen Teilen-Dialog anbietet', async () => {
     const share = vi.fn().mockResolvedValue(undefined);
     Object.assign(navigator, { share, canShare: () => true });
+    touch(0);
+    URL.createObjectURL = vi.fn(() => 'blob:x');
+    URL.revokeObjectURL = vi.fn();
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+    const r = await exportPdf(blob, 'x.pdf');
+    expect(share).not.toHaveBeenCalled();
+    expect(r.status).toBe('download-started');
+    click.mockRestore();
+  });
+  it('nutzt auf dem iPad (Touch) den nativen Teilen-Dialog und behauptet kein „gespeichert“', async () => {
+    const share = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, { share, canShare: () => true });
+    touch(5);
     const r = await exportPdf(blob, 'Interessentenbogen_2026-10-21.pdf');
     expect(share).toHaveBeenCalledOnce();
     expect(r.status).toBe('shared');
     expect(r.message).not.toMatch(/gespeichert/i);
   });
   it('meldet Abbruch im Teilen-Dialog als nicht gespeichert', async () => {
+    touch(5);
     Object.assign(navigator, { share: vi.fn().mockRejectedValue(new DOMException('x', 'AbortError')), canShare: () => true });
     const r = await exportPdf(blob, 'x.pdf');
     expect(r.status).toBe('cancelled');

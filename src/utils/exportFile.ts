@@ -14,7 +14,10 @@ export const exportPdf = async (blob: Blob, filename: string): Promise<ExportRes
   try {
     const file = new File([blob], filename, { type: 'application/pdf' });
     const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
-    if (typeof nav.share === 'function' && typeof nav.canShare === 'function' && nav.canShare({ files: [file] })) {
+    // Teilen-Dialog nur auf Touch-Geräten (iPad/Handy). Am Rechner öffnet z. B. Chrome unter Windows sonst einen
+    // Windows-Teilen-Dialog statt zu speichern – dort gilt der normale Download.
+    const isTouchDevice = (navigator.maxTouchPoints ?? 0) > 1;
+    if (isTouchDevice && typeof nav.share === 'function' && typeof nav.canShare === 'function' && nav.canShare({ files: [file] })) {
       try {
         await nav.share({ files: [file], title: 'Interessentenbogen' });
         return {
